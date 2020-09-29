@@ -1,0 +1,87 @@
+---
+- hosts: hypervservers
+  become: yes
+  become_user: root
+  tasks: 
+     - name: update the repository
+       apt:
+         update_cache: yes
+         cache_valid_time: 3600
+
+     - name: remove old versions
+       apt: 
+         name:
+           - docker
+           - docker-engine
+           - docker.io
+           - containered
+           - runc
+         state: absent
+     
+     - name: install packages to use repository
+       apt:
+         name:
+           - apt-transport-https
+           - ca-certificates
+           - curl
+           - gnupg-agent
+           - software-properties-common
+         state: present
+     
+     - name: add docker gpg public key to repo
+       apt_key: 
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
+
+     - name: test new key
+       shell: "apt-key fingerprint 0EBFCD88"
+             
+     - name: get OS release version
+       shell: "lsb_release -cs"
+       register: osCodename
+       check_mode: no
+     
+     - debug:
+           msg: "os code name is: {{osCodename.stdout}}" 
+
+     - name: add docker repository
+       apt_repository:
+                   repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+                   state: present
+
+     - name: install docker from the repository
+       apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+     
+     - name: Copy docker daemon config file
+       copy:
+         src: ./docker_daemon.json
+         dest: /etc/docker/daemon.json
+       become: yes
+       become_user: root
+     - name: Check if system dir already exists.
+       stat:
+         path: /etc/systemd/system/docker.service.d
+       register: isDockerDirExist
+
+     - name: notify if the DIR docker.service.d is already exist
+       debug:
+         msg: "the /etc/systemd/system/docker.service.d directory is already exist" 
+       when: isDockerDirExist.stat.exists
+
+     - name: Create docker config system service dir
+       file: 
+         path: /etc/systemd/system/docker.service.d
+         state: directory
+       become: yes
+       become_user: root
+       when: isDockerDirExist.stat.exists == false
+
+     - name: reboot nodes
+       reboot:
+...

@@ -1,0 +1,30 @@
+---
+- hosts: hypervservers
+  tasks:
+  - name: Set  authorized keys for ansible user
+    authorized_key:
+       user: ansible
+       state: present
+       key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"  
+  - name: copy file to nodes
+    copy:
+            src:  /etc/initramfs-tools/modules
+            dest: /etc/initramfs-tools/modules
+            backup: yes
+            owner: root
+            group: root
+            mode: 0644
+    become: yes
+    become_user: root
+    #apt update and upgrade rebootin nodes then
+  - name: apt update and upgrade
+    apt:
+      update_cache: yes
+      upgrade: 'yes'
+    become: yes
+    become_user: root 
+  - name: reboot nodes
+    reboot:
+    become: yes
+    become_user: root
+...
