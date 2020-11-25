@@ -1,7 +1,7 @@
 ---
 - hosts: hypervservers
   tasks:
-  - name: Set  authorized keys for ansible user
+  - name: Set authorized keys for ansible user
     authorized_key:
        user: ansible
        state: present

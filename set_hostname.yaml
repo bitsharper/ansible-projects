@@ -1,0 +1,19 @@
+---
+- name: Set servers hostnames
+  hosts: hypervservers
+  become: True
+  become_method: sudo
+  tasks:
+  - debug:
+     msg: Hostname {{ new_hostname }}
+  - name: Set a hostname
+    hostname:
+       name: "{{ new_hostname }}"
+  - name: Update hosts file
+    lineinfile:
+      path: /etc/hosts
+      regexp: '^127\.0\.0\.1[ \t]+localhost'
+      line: '127.0.0.1 localhost {{ new_hostname }}'
+      state: present
+    become: yes
+    become_user: root

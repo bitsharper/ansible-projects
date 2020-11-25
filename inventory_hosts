@@ -1,0 +1,16 @@
+all:
+  hosts:
+  children:
+    dockernodes:
+      hosts:
+        node01.tst.local:
+        node02.tst.local:
+        node03.tst.local:
+    hypervservers:
+      hosts:
+        node01.tst.local:
+           new_hostname: node01 
+        node02.tst.local:
+           new_hostname: node02
+        node03.tst.local:
+           new_hostname: node03
