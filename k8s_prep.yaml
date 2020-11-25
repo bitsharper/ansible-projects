@@ -25,7 +25,7 @@
     register: osCodename
     check_mode: no
   - debug:
-      msg: "os code name is: {{osCodename.stdout}} {{ansible_distribution_release}}"
+      msg: "os code name is: {{osCodename.stdout}}"
 
   - name: add k8s gpg signing key to repository
     apt_key:
